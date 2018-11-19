@@ -6,48 +6,73 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 public class LeaderElection {
-        private static DatagramSocket socket = null;
+// Find the server using UDP broadcast
+public static void main(String args[]) {
+    try {
+        //Open a random port to send the package
+        DatagramSocket c = new DatagramSocket();
+        c.setBroadcast(true);
 
-        public static void main(String[] args) throws IOException
+        byte[] sendData = "DISCOVER_FUIFSERVER_REQUEST".getBytes();
 
-        {
-            for(InetAddress ad : listAllBroadcastAddresses())
-            broadcast("Hello", ad);
+        //Try the 255.255.255.255 first
+        try {
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), 8888);
+            c.send(sendPacket);
+            System.out.println(">>> Request packet sent to: 255.255.255.255 (DEFAULT)");
+        } catch (Exception e) {
         }
 
-        public static void broadcast(
-                String broadcastMessage, InetAddress address) throws IOException {
-            socket = new DatagramSocket();
-            socket.setBroadcast(true);
-
-            byte[] buffer = broadcastMessage.getBytes();
-
-            DatagramPacket packet
-                    = new DatagramPacket(buffer, buffer.length, address, 4445);
-
-            socket.send(packet);
-            socket.close();
-        }
-
-
-    static List<InetAddress> listAllBroadcastAddresses() throws SocketException {
-        List<InetAddress> broadcastList = new ArrayList<>();
-        Enumeration<NetworkInterface> interfaces
-                = NetworkInterface.getNetworkInterfaces();
+        // Broadcast the message over all the network interfaces
+        Enumeration interfaces = NetworkInterface.getNetworkInterfaces();
         while (interfaces.hasMoreElements()) {
-            NetworkInterface networkInterface = interfaces.nextElement();
+            NetworkInterface networkInterface = (NetworkInterface) interfaces.nextElement();
 
             if (networkInterface.isLoopback() || !networkInterface.isUp()) {
-                continue;
+                continue; // Don't want to broadcast to the loopback interface
             }
 
-            networkInterface.getInterfaceAddresses().stream()
-                    .map(a -> a.getBroadcast())
-                    .filter(Objects::nonNull)
-                    .forEach(broadcastList::add);
+            for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
+                InetAddress broadcast = interfaceAddress.getBroadcast();
+                if (broadcast == null) {
+                    continue;
+                }
+
+                // Send the broadcast package!
+                try {
+                    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, 8888);
+                    c.send(sendPacket);
+                } catch (Exception e) {
+                }
+
+                System.out.println(">>> Request packet sent to: " + broadcast.getHostAddress() + "; Interface: " + networkInterface.getDisplayName());
+            }
         }
-        return broadcastList;
+
+        System.out.println(">>> Done looping over all network interfaces. Now waiting for a reply!");
+
+        //Wait for a response
+        byte[] recvBuf = new byte[15000];
+        DatagramPacket receivePacket = new DatagramPacket(recvBuf, recvBuf.length);
+        c.receive(receivePacket);
+
+        //We have a response
+        System.out.println(">>> Broadcast response from server: " + receivePacket.getAddress().getHostAddress());
+
+        //Check if the message is correct
+        String message = new String(receivePacket.getData()).trim();
+        if (message.equals("DISCOVER_FUIFSERVER_RESPONSE")) {
+            //DO SOMETHING WITH THE SERVER'S IP (for example, store it in your controller)
+            System.out.println(receivePacket.getAddress());
+        }
+
+        //Close the port!
+        c.close();
+    } catch (Exception ex) {
+        ex.printStackTrace();
     }
-    }
+}
+}
