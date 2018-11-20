@@ -16,8 +16,16 @@ public class Message {
         FILE_404
     }
 
-    MessageType type;
-    String message;
+    private MessageType type;
+    private String message;
+
+    public MessageType getType() {
+        return type;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 
     public Message(MessageType type, String message) {
         this.type = type;

@@ -43,8 +43,10 @@ public class Broadcast {
 
 
             //Wait for a response
-            byte[] recvBuf = new byte[15000];
+            byte[] recvBuf = new byte[50000];
             DatagramPacket receivePacket = new DatagramPacket(recvBuf, recvBuf.length);
+
+
             c.setSoTimeout(timeout);
 
             try {
@@ -58,6 +60,7 @@ public class Broadcast {
             }
 
             //We have a response
+
             System.out.println(">>> Broadcast response from server: " + receivePacket.getAddress().getHostAddress());
 
             //Check if the message is correct
@@ -69,6 +72,7 @@ public class Broadcast {
 
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
     }
 }

@@ -22,13 +22,13 @@ class TestClient implements Runnable {
                 DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                 socket.receive(packet);
 
+                String message = new String(packet.getData(), 0, packet.getLength()).trim();
                 //Packet received
                 System.out.println(getClass().getName() + ">>>Discovery packet received from: " + packet.getAddress().getHostAddress());
-                System.out.println(getClass().getName() + ">>>Packet received; data: " + new String(packet.getData()));
+                System.out.println(getClass().getName() + ">>>Packet received; data: " + message );
 
                 //See if the packet holds the right command (message)
-                String message = new String(packet.getData()).trim();
-                if (message.equals("DISCOVER_FUIFSERVER_REQUEST")) {
+
                     byte[] sendData = "DISCOVER_FUIFSERVER_RESPONSE".getBytes();
 
                     //Send a response
@@ -36,7 +36,6 @@ class TestClient implements Runnable {
                     socket.send(sendPacket);
 
                     System.out.println(getClass().getName() + ">>>Sent packet to: " + sendPacket.getAddress().getHostAddress());
-                }
             }
         } catch (Exception ex) {
             Logger.getLogger(TestClient.class.getName()).log(Level.SEVERE, null, ex);
