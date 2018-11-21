@@ -46,6 +46,8 @@ public class MessageListener implements Runnable {
 
                 Message.MessageType type = parsedMessage.getType();
 
+                System.out.println("Got: " + parsedMessage.getType() + " message: " + parsedMessage.getMessage());
+
                 switch(type){
                     case DECLARE_LEADER: {
                         hostState.setLeader(InetAddress.getByName(parsedMessage.getMessage()));
