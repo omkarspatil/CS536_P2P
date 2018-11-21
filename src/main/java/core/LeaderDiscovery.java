@@ -47,7 +47,7 @@ public class LeaderDiscovery implements Runnable {
 
         try {
             //Find out the leader
-            hostState.setLeader(null);
+            hostState.setLeader(localIP);
 
             Messaging.broadcast(MessageFactory.getMessage(Message.MessageType.LEADER_DISCOVERY));
             long startTime = System.currentTimeMillis();
@@ -65,9 +65,6 @@ public class LeaderDiscovery implements Runnable {
                     hostState.setElectionHost(true);
                     while(System.currentTimeMillis() - startElectionTime < ELECTION_TIMEOUT);
 
-                    if(hostState.getLeader()==null){
-                        hostState.setLeader(localIP);
-                    }
                     //Declare the result
                     Messaging.broadcast(MessageFactory.getMessage(DECLARE_LEADER, hostState.getLeader()));
                     hostState.setOngoingElection(false);
