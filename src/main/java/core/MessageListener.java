@@ -5,9 +5,8 @@ import entity.Message;
 import network.Messaging;
 import state.HostState;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.net.*;
+import java.util.Enumeration;
 
 public class MessageListener implements Runnable {
     DatagramSocket socket;
@@ -26,16 +25,35 @@ public class MessageListener implements Runnable {
             socket = new DatagramSocket(4445, InetAddress.getByName("0.0.0.0"));
             socket.setBroadcast(true);
 
-            while (true) {
-                System.out.println(getClass().getName() + ">>>Ready to receive messages!");
+            InetAddress localIP = null;
+            for (Enumeration<NetworkInterface> ifaces =
+                 NetworkInterface.getNetworkInterfaces();
+                 ifaces.hasMoreElements(); )
+            {
+                NetworkInterface iface = ifaces.nextElement();
+//                System.out.println(iface.getName() + ":");
+                for (Enumeration<InetAddress> addresses =
+                     iface.getInetAddresses();
+                     addresses.hasMoreElements(); )
+                {
+                    InetAddress address = addresses.nextElement();
+                    if (!address.isLoopbackAddress() && address.isSiteLocalAddress()) {
+                        localIP = address;
+                    }
+                }
+            }
 
+            while (true) {
+
+//                System.out.println(getClass().getName() + ">>>Ready to receive messages!");
                 //Receive a packet
                 byte[] recvBuf = new byte[15000];
                 DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                 socket.receive(packet);
 
-                if(packet.getAddress().equals(InetAddress.getLocalHost())) {
-                    System.out.println("Self");
+//                System.out.println("Got message from " + packet.getAddress() + " to " + localIP);
+                if(packet.getAddress().equals(localIP)) {
+//                    System.out.println("Self");
                     continue;
                 }
 
@@ -45,8 +63,8 @@ public class MessageListener implements Runnable {
                 Message parsedMessage = gson.fromJson(message, Message.class);
 
                 Message.MessageType type = parsedMessage.getType();
+                System.out.println("from " + packet.getAddress().getHostAddress() + ", to " + localIP + " Got: " + parsedMessage.getType() + " message: " + parsedMessage.getMessage());
 
-                System.out.println("Got: " + parsedMessage.getType() + " message: " + parsedMessage.getMessage());
 
                 switch(type){
                     case DECLARE_LEADER: {

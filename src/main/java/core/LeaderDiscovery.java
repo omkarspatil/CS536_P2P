@@ -4,7 +4,10 @@ import entity.Message;
 import network.Messaging;
 import state.HostState;
 
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 
 import static entity.Message.MessageType.*;
 
@@ -19,6 +22,29 @@ public class LeaderDiscovery implements Runnable {
     }
 
     public String discoverLeader(){
+        InetAddress localIP = null;
+        try {
+
+            for (Enumeration<NetworkInterface> ifaces =
+                 NetworkInterface.getNetworkInterfaces();
+                 ifaces.hasMoreElements(); )
+            {
+                NetworkInterface iface = ifaces.nextElement();
+//                System.out.println(iface.getName() + ":");
+                for (Enumeration<InetAddress> addresses =
+                     iface.getInetAddresses();
+                     addresses.hasMoreElements(); )
+                {
+                    InetAddress address = addresses.nextElement();
+                    if (!address.isLoopbackAddress() && address.isSiteLocalAddress()) {
+                        localIP = address;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         try {
             //Find out the leader
             hostState.setLeader(null);
@@ -40,7 +66,7 @@ public class LeaderDiscovery implements Runnable {
                     while(System.currentTimeMillis() - startElectionTime < ELECTION_TIMEOUT);
 
                     if(hostState.getLeader()==null){
-                        hostState.setLeader(InetAddress.getLocalHost());
+                        hostState.setLeader(localIP);
                     }
                     //Declare the result
                     Messaging.broadcast(MessageFactory.getMessage(DECLARE_LEADER, hostState.getLeader()));
