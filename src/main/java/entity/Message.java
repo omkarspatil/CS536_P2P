@@ -7,13 +7,13 @@ public class Message {
         LEADER_DISCOVERY,
         FILE_LIST,
         CONTEST_ELECTION,
-        CLAIM_LEADERSHIP,
-        ACK_LEADER,
+        DECLARE_LEADER,
         FILE_QUERY,
         FILE_QUERY_RESPONSE,
         FILE_REQUEST,
         FILE_RESPONSE,
-        FILE_404
+        FILE_404,
+        ELECTION_PARTICIPANT
     }
 
     private MessageType type;

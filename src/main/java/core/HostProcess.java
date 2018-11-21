@@ -11,6 +11,7 @@ public class HostProcess {
         //Start listening for messages in a separate thread
         Thread leThread = new Thread(new LeaderDiscovery(hostState));
         Thread listener = new Thread(new MessageListener(hostState, leThread));
+
         listener.start();
         leThread.start();
 

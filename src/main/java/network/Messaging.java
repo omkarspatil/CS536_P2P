@@ -4,11 +4,10 @@ import java.io.IOException;
 import java.net.*;
 import java.util.Enumeration;
 
-public class Broadcast {
-    public static String broadcast(String message, int timeout) throws IOException {
+public class Messaging {
+    public static void broadcast(String message) throws IOException {
         DatagramSocket c = new DatagramSocket();
         c.setBroadcast(true);
-
         //Try the 255.255.255.255 first
         try {
             byte[] messageBytes = message.getBytes();
@@ -16,7 +15,7 @@ public class Broadcast {
             c.send(sendPacket);
             System.out.println(">>>Request packet sent to: 255.255.255.255 (DEFAULT)");
 
-            // Broadcast the message over all the network interfaces
+            // Messaging the message over all the network interfaces
             Enumeration interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = (NetworkInterface) interfaces.nextElement();
@@ -41,38 +40,19 @@ public class Broadcast {
             }
             System.out.println(">>> Done looping over all network interfaces. Now waiting for a reply!");
 
-
-            //Wait for a response
-            byte[] recvBuf = new byte[50000];
-            DatagramPacket receivePacket = new DatagramPacket(recvBuf, recvBuf.length);
-
-
-            c.setSoTimeout(timeout);
-
-            try {
-                c.receive(receivePacket);
-            }
-            catch (SocketTimeoutException e) {
-                // timeout exception.
-                System.out.println("Timeout reached for broadcast ");
-                c.close();
-                return null;
-            }
-
-            //We have a response
-
-            System.out.println(">>> Broadcast response from server: " + receivePacket.getAddress().getHostAddress());
-
-            //Check if the message is correct
-            String messageResponse = new String(receivePacket.getData()).trim();
-            //Close the port!
-            c.close();
-
-            return messageResponse;
-
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+        }
+    }
+
+    public static void unicast(InetAddress to, String message) throws IOException {
+        DatagramSocket c = new DatagramSocket();
+        //Try the 255.255.255.255 first
+        try {
+            byte[] bytes = message.getBytes();
+            c.send(new DatagramPacket(bytes,bytes.length, to,4445));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

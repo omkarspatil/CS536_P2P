@@ -2,6 +2,7 @@ package core;
 
 import com.google.gson.Gson;
 import entity.Message;
+import network.Messaging;
 import state.HostState;
 
 import java.net.DatagramPacket;
@@ -10,7 +11,6 @@ import java.net.InetAddress;
 
 public class MessageListener implements Runnable {
     DatagramSocket socket;
-
     HostState hostState;
     Thread leaderDiscoverThread;
 
@@ -23,7 +23,7 @@ public class MessageListener implements Runnable {
     public void run() {
         try {
             //Keep a socket open to listen to all the UDP trafic that is destined for this port
-            socket = new DatagramSocket(8888, InetAddress.getByName("0.0.0.0"));
+            socket = new DatagramSocket(4445, InetAddress.getByName("0.0.0.0"));
             socket.setBroadcast(true);
 
             while (true) {
@@ -39,18 +39,39 @@ public class MessageListener implements Runnable {
                 Gson gson = new Gson();
                 Message parsedMessage = gson.fromJson(message, Message.class);
 
-                System.out.println(parsedMessage.getType());
-                //See if the packet holds the right command (message)
+                Message.MessageType type = parsedMessage.getType();
 
-                byte[] sendData = "DISCOVER_FUIFSERVER_RESPONSE".getBytes();
+                switch(type){
+                    case DECLARE_LEADER: {
+                        hostState.setLeader(InetAddress.getByName(parsedMessage.getMessage()));
+                        hostState.setOngoingElection(false);
+                        leaderDiscoverThread.interrupt();
+                        //TODO: Send file list
+                        break;
+                    }
+                    case LEADER_DISCOVERY:{
+                        if(hostState.isElectionHost()){
+                            Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.CONTEST_ELECTION));
+                        }
 
-                //Send a response
-                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, packet.getAddress(), packet.getPort());
-                socket.send(sendPacket);
+                        if(hostState.getLeader().equals(InetAddress.getLocalHost()))
+                            Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.DECLARE_LEADER, hostState.getLeader()));
 
-                leaderDiscoverThread.interrupt();
-
-                System.out.println(getClass().getName() + ">>>Sent packet to: " + sendPacket.getAddress().getHostAddress());
+                        break;
+                    }
+                    case ELECTION_PARTICIPANT:{
+                        //Check if its the new bully
+                        InetAddress currentLeader = hostState.getLeader();
+                        if(currentLeader == null || packet.getAddress().toString().compareTo(currentLeader.toString())>0){
+                            hostState.setLeader(packet.getAddress());
+                        }
+                        break;
+                    }
+                    case CONTEST_ELECTION:{
+                        Messaging.unicast(packet.getAddress(),MessageFactory.getMessage(Message.MessageType.ELECTION_PARTICIPANT));
+                        break;
+                    }
+                }
             }
         } catch (Exception ex) {
             ex.printStackTrace();
