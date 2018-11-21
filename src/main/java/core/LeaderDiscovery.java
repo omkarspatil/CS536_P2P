@@ -58,9 +58,5 @@ public class LeaderDiscovery implements Runnable {
     @Override
     public void run() {
         discoverLeader();
-        while(!Thread.interrupted()) {
-            System.out.println("G");
-            Thread.yield();
-        }
     }
 }

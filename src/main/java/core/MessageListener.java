@@ -34,6 +34,11 @@ public class MessageListener implements Runnable {
                 DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                 socket.receive(packet);
 
+                if(packet.getAddress().equals(InetAddress.getLocalHost())) {
+                    System.out.println("Self");
+                    continue;
+                }
+
                 String message = new String(packet.getData(), 0, packet.getLength()).trim();
                 //Packet received and parsed
                 Gson gson = new Gson();
@@ -54,9 +59,8 @@ public class MessageListener implements Runnable {
                             Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.CONTEST_ELECTION));
                         }
 
-                        if(hostState.getLeader().equals(InetAddress.getLocalHost()))
+                        if(hostState.getLeader()!=null && hostState.getLeader().equals(InetAddress.getLocalHost()))
                             Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.DECLARE_LEADER, hostState.getLeader()));
-
                         break;
                     }
                     case ELECTION_PARTICIPANT:{
