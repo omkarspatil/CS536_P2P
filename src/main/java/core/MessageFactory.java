@@ -25,7 +25,7 @@ public class MessageFactory {
         Gson gson = new Gson();
         switch(type){
             case DECLARE_LEADER:
-                return gson.toJson(new Message(type, address.toString()));
+                return gson.toJson(new Message(type, address.getHostAddress()));
             default:
                 return "";
         }
