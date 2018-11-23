@@ -5,8 +5,14 @@ import entity.Message;
 import network.Messaging;
 import state.HostState;
 
-import java.net.*;
+import java.io.File;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 
 public class MessageListener implements Runnable {
     DatagramSocket socket;
@@ -43,6 +49,14 @@ public class MessageListener implements Runnable {
                 }
             }
 
+            List<String> files = new ArrayList<>();
+            for (final File fileEntry : new File("./files").listFiles()) {
+                if (!fileEntry.isDirectory()) {
+                    files.add(fileEntry.getName());
+                    hostState.getIndex().add(fileEntry.getName(), localIP);
+                }
+            }
+
             while (true) {
 
 //                System.out.println(getClass().getName() + ">>>Ready to receive messages!");
@@ -72,7 +86,7 @@ public class MessageListener implements Runnable {
                         hostState.setOngoingElection(false);
                         hostState.setElectionHost(false);
                         leaderDiscoverThread.interrupt();
-                        //TODO: Send file list
+                        Messaging.unicast(hostState.getLeader(),MessageFactory.getMessage(Message.MessageType.FILE_LIST,files));
                         break;
                     }
                     case LEADER_DISCOVERY: {
@@ -106,6 +120,14 @@ public class MessageListener implements Runnable {
                         } else if (hostState.isElectionHost()) {
                             Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.CONTEST_ELECTION));
                         }
+                        break;
+                    }
+                    case FILE_LIST:{
+                        List files = gson.fromJson(parsedMessage.getMessage(), ArrayList.class);
+                        for(Object file : files){
+                            hostState.getIndex().add((String)file, packet.getAddress());
+                        }
+                        System.out.println(hostState.getIndex());
                         break;
                     }
                 }

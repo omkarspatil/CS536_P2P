@@ -24,4 +24,8 @@ public class FileIndex {
         }
     }
 
+    @Override
+    public String toString() {
+        return index.toString();
+    }
 }
