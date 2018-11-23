@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import entity.Message;
 
 import java.net.InetAddress;
-import java.util.List;
+import java.util.Set;
 
 public class MessageFactory {
 
@@ -32,7 +32,7 @@ public class MessageFactory {
         }
     }
 
-    static String getMessage(Message.MessageType type, List<String> files){
+    static String getMessage(Message.MessageType type, Set<String> files){
         Gson gson = new Gson();
         switch(type){
             case FILE_LIST:

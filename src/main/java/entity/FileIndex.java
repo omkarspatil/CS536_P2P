@@ -1,20 +1,17 @@
 package entity;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FileIndex {
-    Map<String, List<InetAddress>> index;
+    Map<String, Set<InetAddress>> index;
 
     public FileIndex(){
         index = new HashMap<>();
     }
 
     public void add(String file, InetAddress host){
-        index.putIfAbsent(file, new ArrayList<>());
+        index.putIfAbsent(file, new HashSet<>());
         index.get(file).add(host);
     }
 

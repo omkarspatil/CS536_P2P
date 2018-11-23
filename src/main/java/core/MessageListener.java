@@ -10,9 +10,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 
 public class MessageListener implements Runnable {
     DatagramSocket socket;
@@ -49,7 +47,7 @@ public class MessageListener implements Runnable {
                 }
             }
 
-            List<String> files = new ArrayList<>();
+            Set<String> files = new HashSet<>();
             for (final File fileEntry : new File("./files").listFiles()) {
                 if (!fileEntry.isDirectory()) {
                     files.add(fileEntry.getName());
