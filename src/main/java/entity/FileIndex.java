@@ -22,7 +22,16 @@ public class FileIndex {
     }
 
     public Set<String> getFiles(){
-        return index.keySet();
+        return new TreeSet<>(index.keySet());
+    }
+
+    public Map<String, Set<InetAddress>> getHostsMap(Set<String> files){
+        Map<String, Set<InetAddress>> map = new HashMap<>();
+        for(String file: files){
+            if(index.containsKey(file))
+            map.put(file,index.get(file));
+        }
+        return map;
     }
 
     @Override

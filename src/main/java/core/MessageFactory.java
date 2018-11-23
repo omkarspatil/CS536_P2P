@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import entity.Message;
 
 import java.net.InetAddress;
+import java.util.Map;
 import java.util.Set;
 
 public class MessageFactory {
@@ -15,12 +16,11 @@ public class MessageFactory {
             case CONTEST_ELECTION:
             case ELECTION_PARTICIPANT:
             case FILE_LIST_QUERY:
+            case FILE_404:
                 return gson.toJson(new Message(type, ""));
             default:
                 return "";
-
         }
-
     }
 
     static String getMessage(Message.MessageType type, InetAddress address){
@@ -38,7 +38,18 @@ public class MessageFactory {
         switch(type){
             case FILE_LIST:
             case FILE_LIST_RESPONSE:
+            case FILE_QUERY:
                 return gson.toJson(new Message(type, files.toString()));
+            default:
+                return "";
+        }
+    }
+
+    static String getMessageForQueryResponse(Message.MessageType type, Map<String, Set<InetAddress>> hosts){
+        Gson gson = new Gson();
+        switch(type){
+            case FILE_QUERY_RESPONSE:
+                return gson.toJson(new Message(type, hosts.toString()));
             default:
                 return "";
         }

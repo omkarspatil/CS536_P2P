@@ -1,11 +1,13 @@
 package core;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import entity.Message;
 import network.Messaging;
 import state.HostState;
 
 import java.io.File;
+import java.lang.reflect.Type;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -51,7 +53,7 @@ public class MessageListener implements Runnable {
 
             hostState.setLocalIP(localIP);
 
-            Set<String> files = new HashSet<>();
+            Set<String> files = new TreeSet<>();
             for (final File fileEntry : new File("./files").listFiles()) {
                 if (!fileEntry.isDirectory()) {
                     files.add(fileEntry.getName());
@@ -137,6 +139,27 @@ public class MessageListener implements Runnable {
                         break;
                     }
                     case FILE_LIST_RESPONSE:{
+                        System.out.println(parsedMessage.getMessage());
+                        CLIThread.interrupt();
+                        break;
+                    }
+                    case FILE_QUERY:{
+                        Set filesList = gson.fromJson(parsedMessage.getMessage(), Set.class);
+                        Map<String,Set<InetAddress>> hostsMap = hostState.getIndex().getHostsMap(filesList);
+                        Messaging.unicast(packet.getAddress(), MessageFactory.getMessageForQueryResponse(Message.MessageType.FILE_QUERY_RESPONSE, hostsMap));
+                        break;
+                    }
+                    case FILE_QUERY_RESPONSE:{
+                        Type mapType = new TypeToken<Map<String,Set<InetAddress>>>(){}.getType();
+                        Map<String,Set<InetAddress>> hostsMap = gson.fromJson(parsedMessage.getMessage(), mapType);
+                        for(String file : hostsMap.keySet()){
+                            for(InetAddress i : hostsMap.get(file))
+                            hostState.getIndex().add(file, i);
+                        }
+                        CLIThread.interrupt();
+                        break;
+                    }
+                    case FILE_404:{
                         System.out.println(parsedMessage.getMessage());
                         CLIThread.interrupt();
                     }

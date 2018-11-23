@@ -30,7 +30,7 @@ public class CLI implements Runnable{
                 switch(commands.get(0)){
                     case "list": {
                         if(commands.size()==2){
-                            Set<String> files = new HashSet<>();
+                            Set<String> files = new TreeSet<>();
                             for (final File fileEntry : new File("./files").listFiles()) {
                                 if (!fileEntry.isDirectory()) {
                                     files.add(fileEntry.getName());
@@ -52,12 +52,19 @@ public class CLI implements Runnable{
                         }
                     }
                     case "get":{
+                        try {
+                            if(!hostState.getLeader().equals(hostState.getLocalIP())){
+                                Messaging.unicast(hostState.getLeader(), MessageFactory.getMessage(Message.MessageType.FILE_QUERY, new HashSet<>(commands.subList(1,commands.size()))));
+                                while(!Thread.interrupted()) Thread.yield();
+                            }
+                            System.out.println(hostState.getIndex());
+                        }
+                        catch (IOException e){
 
+                        }
                     }
                 }
             }
         }
-
-
     }
 }
