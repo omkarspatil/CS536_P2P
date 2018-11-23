@@ -70,29 +70,42 @@ public class MessageListener implements Runnable {
                     case DECLARE_LEADER: {
                         hostState.setLeader(InetAddress.getByName(parsedMessage.getMessage()));
                         hostState.setOngoingElection(false);
+                        hostState.setElectionHost(false);
                         leaderDiscoverThread.interrupt();
                         //TODO: Send file list
                         break;
                     }
-                    case LEADER_DISCOVERY:{
-                        if(hostState.isElectionHost()){
-                            Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.CONTEST_ELECTION));
-                        }
-
-                        if(hostState.getLeader()!=null && hostState.getLeader().equals(InetAddress.getLocalHost()))
+                    case LEADER_DISCOVERY: {
+                        if (hostState.isOngoingElection()) {
+                            if (hostState.isElectionHost()) {
+                                Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.CONTEST_ELECTION));
+                            }
+                        } else if(hostState.getLeader()!=null && hostState.getLeader().equals(InetAddress.getLocalHost())) {
                             Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.DECLARE_LEADER, hostState.getLeader()));
+                        }
                         break;
                     }
                     case ELECTION_PARTICIPANT:{
                         //Check if its the new bully
                         InetAddress currentLeader = hostState.getLeader();
-                        if(currentLeader == null || packet.getAddress().toString().compareTo(currentLeader.toString())>0){
+                        if (currentLeader == null) {
+                            currentLeader = localIP;
+                            hostState.setLeader(localIP);
+                        }
+                        if(packet.getAddress().toString().compareTo(currentLeader.toString())>0){
                             hostState.setLeader(packet.getAddress());
                         }
                         break;
                     }
                     case CONTEST_ELECTION:{
-                        Messaging.unicast(packet.getAddress(),MessageFactory.getMessage(Message.MessageType.ELECTION_PARTICIPANT));
+                        leaderDiscoverThread.interrupt();
+                        if (!hostState.isOngoingElection()) {
+                            hostState.setOngoingElection(true);
+                            hostState.setElectionHost(false);
+                            Messaging.unicast(packet.getAddress(),MessageFactory.getMessage(Message.MessageType.ELECTION_PARTICIPANT));
+                        } else if (hostState.isElectionHost()) {
+                            Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.CONTEST_ELECTION));
+                        }
                         break;
                     }
                 }
