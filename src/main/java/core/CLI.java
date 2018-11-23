@@ -50,6 +50,7 @@ public class CLI implements Runnable{
 
                             }
                         }
+                        break;
                     }
                     case "get":{
                         try {
