@@ -16,6 +16,7 @@ public class HostProcess {
 
         listener.start();
         leThread.start();
+        cliThread.start();
 
     }
 }
