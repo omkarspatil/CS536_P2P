@@ -112,7 +112,7 @@ public class MessageListener implements Runnable {
                         break;
                     }
                     case CONTEST_ELECTION:{
-                        leaderDiscoverThread.interrupt();
+                        //leaderDiscoverThread.interrupt();
                         if (!hostState.isOngoingElection()) {
                             hostState.setOngoingElection(true);
                             hostState.setElectionHost(false);
@@ -123,8 +123,8 @@ public class MessageListener implements Runnable {
                         break;
                     }
                     case FILE_LIST:{
-                        List files = gson.fromJson(parsedMessage.getMessage(), ArrayList.class);
-                        for(Object file : files){
+                        List filesIn = gson.fromJson(parsedMessage.getMessage(), ArrayList.class);
+                        for(Object file : filesIn){
                             hostState.getIndex().add((String)file, packet.getAddress());
                         }
                         System.out.println(hostState.getIndex());
