@@ -49,6 +49,8 @@ public class MessageListener implements Runnable {
                 }
             }
 
+            hostState.setLocalIP(localIP);
+
             Set<String> files = new HashSet<>();
             for (final File fileEntry : new File("./files").listFiles()) {
                 if (!fileEntry.isDirectory()) {

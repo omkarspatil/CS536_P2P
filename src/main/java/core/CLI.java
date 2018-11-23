@@ -40,8 +40,11 @@ public class CLI implements Runnable{
                         }
                         else{
                             try {
-                                Messaging.unicast(hostState.getLeader(), MessageFactory.getMessage(Message.MessageType.FILE_LIST_QUERY));
-                                while(!Thread.interrupted()) Thread.yield();
+                                if(hostState.getLeader().equals(hostState.getLocalIP())) System.out.println(hostState.getIndex().getFiles());
+                                else{
+                                    Messaging.unicast(hostState.getLeader(), MessageFactory.getMessage(Message.MessageType.FILE_LIST_QUERY));
+                                    while(!Thread.interrupted()) Thread.yield();
+                                }
                             }
                             catch (IOException e){
 

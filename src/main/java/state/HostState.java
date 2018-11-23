@@ -20,6 +20,16 @@ public class HostState {
     private InetAddress leader;
     private FileIndex index;
 
+    public InetAddress getLocalIP() {
+        return localIP;
+    }
+
+    public void setLocalIP(InetAddress localIP) {
+        this.localIP = localIP;
+    }
+
+    private InetAddress localIP;
+
     public HostState(){
         index = new FileIndex();
     }
