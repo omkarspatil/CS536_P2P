@@ -8,6 +8,8 @@ public class Message {
         FILE_LIST,
         CONTEST_ELECTION,
         DECLARE_LEADER,
+        FILE_LIST_QUERY,
+        FILE_LIST_RESPONSE,
         FILE_QUERY,
         FILE_QUERY_RESPONSE,
         FILE_REQUEST,

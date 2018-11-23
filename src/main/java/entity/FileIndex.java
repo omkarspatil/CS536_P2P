@@ -21,6 +21,10 @@ public class FileIndex {
         }
     }
 
+    public Set<String> getFiles(){
+        return index.keySet();
+    }
+
     @Override
     public String toString() {
         return index.toString();

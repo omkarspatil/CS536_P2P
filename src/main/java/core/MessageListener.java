@@ -16,10 +16,12 @@ public class MessageListener implements Runnable {
     DatagramSocket socket;
     HostState hostState;
     Thread leaderDiscoverThread;
+    Thread CLIThread;
 
-    MessageListener(HostState hs, Thread leThread) {
+    MessageListener(HostState hs, Thread leThread, Thread CLIThread) {
         hostState = hs;
         leaderDiscoverThread = leThread;
+        this.CLIThread = CLIThread;
     }
 
     @Override
@@ -127,6 +129,14 @@ public class MessageListener implements Runnable {
                         }
                         System.out.println(hostState.getIndex());
                         break;
+                    }
+                    case FILE_LIST_QUERY:{
+                        Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.FILE_LIST_RESPONSE, hostState.getIndex().getFiles()));
+                        break;
+                    }
+                    case FILE_LIST_RESPONSE:{
+                        System.out.println(parsedMessage.getMessage());
+                        CLIThread.interrupt();
                     }
                 }
             }

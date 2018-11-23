@@ -14,6 +14,7 @@ public class MessageFactory {
             case LEADER_DISCOVERY:
             case CONTEST_ELECTION:
             case ELECTION_PARTICIPANT:
+            case FILE_LIST_QUERY:
                 return gson.toJson(new Message(type, ""));
             default:
                 return "";
@@ -36,6 +37,7 @@ public class MessageFactory {
         Gson gson = new Gson();
         switch(type){
             case FILE_LIST:
+            case FILE_LIST_RESPONSE:
                 return gson.toJson(new Message(type, files.toString()));
             default:
                 return "";
