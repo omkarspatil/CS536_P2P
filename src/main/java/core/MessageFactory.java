@@ -49,7 +49,7 @@ public class MessageFactory {
         Gson gson = new Gson();
         switch(type){
             case FILE_QUERY_RESPONSE:
-                return gson.toJson(new Message(type, hosts.toString()));
+                return gson.toJson(new Message(type, gson.toJson(hosts)));
             default:
                 return "";
         }
