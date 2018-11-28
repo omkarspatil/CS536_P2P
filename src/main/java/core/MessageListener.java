@@ -172,7 +172,7 @@ public class MessageListener implements Runnable {
                         break;
                     }
                     case FILE_REQUEST:{
-                        File f = new File(parsedMessage.getMessage());
+                        File f = new File("./files/"+parsedMessage.getMessage());
                         if(f.exists() && !f.isDirectory()) {
                             Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.FILE_RESPONSE, parsedMessage.getMessage()));
 
