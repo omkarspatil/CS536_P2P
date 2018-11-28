@@ -61,7 +61,7 @@ public class FileTransfer implements Runnable {
             case RECIEVER: {
                 try {
                     for (InetAddress host : hosts) {
-                        Messaging.unicast(host, MessageFactory.getMessage(Message.MessageType.FILE_REQUEST));
+                        Messaging.unicast(host, MessageFactory.getMessage(Message.MessageType.FILE_REQUEST, fileName));
                         long startTime = System.currentTimeMillis();
                         while (!Thread.interrupted() && System.currentTimeMillis() - startTime < FILE_AVAILABILITY_TIMEOUT)
                             ;
