@@ -45,6 +45,19 @@ public class MessageFactory {
         }
     }
 
+    static String getMessage(Message.MessageType type, String file){
+        Gson gson = new Gson();
+        switch(type) {
+            case FILE_REQUEST:
+            case FILE_RESPONSE_404:
+            case FILE_RESPONSE:
+                return gson.toJson(new Message(type, gson.toJson(file)));
+            default:
+                return "";
+
+        }
+    }
+
     static String getMessageForQueryResponse(Message.MessageType type, Map<String, Set<InetAddress>> hosts){
         Gson gson = new Gson();
         switch(type){

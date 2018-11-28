@@ -15,6 +15,7 @@ public class Message {
         FILE_REQUEST,
         FILE_RESPONSE,
         FILE_404,
+        FILE_RESPONSE_404,
         ELECTION_PARTICIPANT
     }
 

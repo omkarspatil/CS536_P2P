@@ -54,11 +54,22 @@ public class CLI implements Runnable{
                     }
                     case "get":{
                         try {
+                            Set<String> files = new HashSet<>(commands.subList(1,commands.size()));
                             if(!hostState.getLeader().equals(hostState.getLocalIP())){
-                                Messaging.unicast(hostState.getLeader(), MessageFactory.getMessage(Message.MessageType.FILE_QUERY, new HashSet<>(commands.subList(1,commands.size()))));
+                                Messaging.unicast(hostState.getLeader(), MessageFactory.getMessage(Message.MessageType.FILE_QUERY, files ));
                                 while(!Thread.interrupted()) Thread.yield();
                             }
-                            System.out.println(hostState.getIndex());
+
+                            //Check where a file is available
+                            Set<String> missingFiles = new TreeSet<>();
+                            Set<String> locatedFiles  = hostState.getIndex().getFiles();
+
+                            for(String file : files){
+                                if(!locatedFiles.contains(file)){
+                                    missingFiles.add(file);
+                                }
+                            }
+                            System.out.println("Files : " + missingFiles + " were not available");
                         }
                         catch (IOException e){
 

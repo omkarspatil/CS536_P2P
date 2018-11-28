@@ -3,6 +3,7 @@ package core;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import entity.Message;
+import entity.TransferState;
 import network.Messaging;
 import state.HostState;
 
@@ -155,13 +156,40 @@ public class MessageListener implements Runnable {
                         for(String file : hostsMap.keySet()){
                             for(InetAddress i : hostsMap.get(file))
                             hostState.getIndex().add(file, i);
+                            hostState.getTransfers().put(file, new TransferState(new Thread(new FileTransfer(hostState.getIndex().get(file), file, FileTransfer.TransferType.RECIEVER, hostState)), false));
                         }
                         CLIThread.interrupt();
+
+                        for(String file : hostState.getTransfers().keySet()){
+                            hostState.getTransfers().get(file).getThread().start();
+                        }
+
                         break;
                     }
                     case FILE_404:{
                         System.out.println(parsedMessage.getMessage());
                         CLIThread.interrupt();
+                        break;
+                    }
+                    case FILE_REQUEST:{
+                        File f = new File(parsedMessage.getMessage());
+                        if(f.exists() && !f.isDirectory()) {
+                            Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.FILE_RESPONSE, parsedMessage.getMessage()));
+
+                        }
+                        else{
+                            Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.FILE_RESPONSE_404, parsedMessage.getMessage()));
+                        }
+                        break;
+                    }
+                    case FILE_RESPONSE:{
+                        hostState.getTransfers().get(parsedMessage.getMessage()).setStatus(true);
+                        hostState.getTransfers().get(parsedMessage.getMessage()).getThread().interrupt();
+                        break;
+                    }
+                    case FILE_RESPONSE_404:{
+                        hostState.getTransfers().get(parsedMessage.getMessage()).getThread().interrupt();
+                        break;
                     }
                 }
             }

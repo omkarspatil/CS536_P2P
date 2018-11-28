@@ -15,7 +15,11 @@ public class FileIndex {
         index.get(file).add(host);
     }
 
-    public void remove(String file, InetAddress host){
+    public Set<InetAddress> get(String file){
+        return index.containsKey(file) ? index.get(file) : null;
+    }
+
+                    public void remove(String file, InetAddress host){
         if(index.containsKey(file)){
             index.get(file).remove(host);
         }

@@ -1,8 +1,11 @@
 package state;
 
 import entity.FileIndex;
+import entity.TransferState;
 
 import java.net.InetAddress;
+import java.util.HashMap;
+import java.util.Map;
 
 public class HostState {
 
@@ -20,6 +23,13 @@ public class HostState {
     private InetAddress leader;
     private FileIndex index;
 
+    public Map<String, TransferState> getTransfers() {
+        return transfers;
+    }
+
+    private Map<String, TransferState> transfers;
+
+
     public InetAddress getLocalIP() {
         return localIP;
     }
@@ -32,6 +42,7 @@ public class HostState {
 
     public HostState(){
         index = new FileIndex();
+        transfers = new HashMap<>();
     }
 
     public InetAddress getLeader() {
