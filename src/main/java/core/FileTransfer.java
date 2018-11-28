@@ -53,6 +53,7 @@ public class FileTransfer implements Runnable {
                     out.close();
                     in.close();
                     socket.close();
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -87,14 +88,13 @@ public class FileTransfer implements Runnable {
                     } else {
                         System.out.println("Transfer completed : " + fileName + "(" + f.length() / 1024 + " kB)");
                     }
-
-                    state.getTransfers().remove(fileName);
-
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 break;
             }
+
         }
+        state.getTransfers().remove(fileName);
     }
 }
