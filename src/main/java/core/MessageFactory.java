@@ -51,7 +51,7 @@ public class MessageFactory {
             case FILE_REQUEST:
             case FILE_RESPONSE_404:
             case FILE_RESPONSE:
-                return gson.toJson(new Message(type, gson.toJson(file)));
+                return gson.toJson(new Message(type,file));
             default:
                 return "";
 
