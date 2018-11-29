@@ -74,7 +74,7 @@ public class FileTransfer implements Runnable {
 
                         if (state.getTransfers().get(fileName).getStatus()) {
                             Messaging.unicast(host, MessageFactory.getMessage(Message.MessageType.SEND_FILE, fileName + "," +
-                                    portRange[0] + new Random().nextInt(portRange[1] - portRange[0] + 1)));
+                                    (portRange[0] + new Random().nextInt(portRange[1] - portRange[0] + 1))));
                             ServerSocket serverSocket = new ServerSocket(8999);
                             Socket socket = serverSocket.accept();
                             DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
