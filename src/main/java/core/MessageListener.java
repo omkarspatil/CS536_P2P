@@ -176,6 +176,7 @@ public class MessageListener implements Runnable {
                         if(f.exists() && !f.isDirectory()) {
                             Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.FILE_RESPONSE, parsedMessage.getMessage()));
                             hostState.getTransfers().put(parsedMessage.getMessage(), new TransferState(new Thread(new FileTransfer(packet.getAddress(), parsedMessage.getMessage(), FileTransfer.TransferType.SENDER, hostState)),false));
+                            hostState.getTransfers().get(parsedMessage.getMessage()).getThread().start();
                         }
                         else{
                             Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.FILE_RESPONSE_404, parsedMessage.getMessage()));
@@ -189,10 +190,6 @@ public class MessageListener implements Runnable {
                     }
                     case FILE_RESPONSE_404:{
                         hostState.getTransfers().get(parsedMessage.getMessage()).getThread().interrupt();
-                        break;
-                    }
-                    case SEND_FILE:{
-                        hostState.getTransfers().get(parsedMessage.getMessage()).getThread().start();
                         break;
                     }
                 }

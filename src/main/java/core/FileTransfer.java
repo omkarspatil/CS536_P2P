@@ -69,7 +69,6 @@ public class FileTransfer implements Runnable {
                         while (!Thread.interrupted() && System.currentTimeMillis() - startTime < FILE_AVAILABILITY_TIMEOUT);
 
                         if (state.getTransfers().get(fileName).getStatus()) {
-                            Messaging.unicast(host, MessageFactory.getMessage(Message.MessageType.SEND_FILE, fileName));
                             ServerSocket serverSocket = new ServerSocket(8999);
                             Socket socket = serverSocket.accept();
                             DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
