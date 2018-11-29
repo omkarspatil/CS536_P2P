@@ -73,8 +73,6 @@ public class FileTransfer implements Runnable {
                             ServerSocket serverSocket = new ServerSocket(8999);
                             Socket socket = serverSocket.accept();
                             DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-                            byte[] bytes = new byte[1024];
-                            in.read(bytes);
                             int count;
                             byte[] buffer = new byte[8192]; // or 4096, or more
                             FileOutputStream fos = new FileOutputStream("./files/" + fileName);
