@@ -14,6 +14,7 @@ public class Message {
         FILE_QUERY_RESPONSE,
         FILE_REQUEST,
         FILE_RESPONSE,
+        SEND_FILE,
         FILE_404,
         FILE_RESPONSE_404,
         ELECTION_PARTICIPANT

@@ -8,6 +8,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Random;
 import java.util.Set;
 
 public class FileTransfer implements Runnable {
@@ -15,11 +16,13 @@ public class FileTransfer implements Runnable {
     public enum TransferType {SENDER, RECIEVER}
 
     private final int FILE_AVAILABILITY_TIMEOUT = 100000;
+    private final int[] portRange = {6000, 9000};
     Set<InetAddress> hosts;
     InetAddress sendTo;
     String fileName;
     TransferType type;
     HostState state;
+    int port;
 
     public FileTransfer(Set<InetAddress> hosts, String fileName, TransferType type, HostState state) {
         this.hosts = hosts;
@@ -28,11 +31,12 @@ public class FileTransfer implements Runnable {
         this.state = state;
     }
 
-    public FileTransfer(InetAddress sendTo, String fileName, TransferType type, HostState state) {
+    public FileTransfer(InetAddress sendTo, String fileName, TransferType type, HostState state, int port) {
         this.sendTo = sendTo;
         this.fileName = fileName;
         this.type = type;
         this.state = state;
+        this.port = port;
     }
 
     @Override
@@ -40,7 +44,7 @@ public class FileTransfer implements Runnable {
         switch (type) {
             case SENDER: {
                 try {
-                    Socket socket = new Socket(sendTo, 8999);
+                    Socket socket = new Socket(sendTo, port);
                     File file = new File("./files/" + fileName);
 
                     // Get the size of the file
@@ -69,6 +73,8 @@ public class FileTransfer implements Runnable {
                         while (!Thread.interrupted() && System.currentTimeMillis() - startTime < FILE_AVAILABILITY_TIMEOUT);
 
                         if (state.getTransfers().get(fileName).getStatus()) {
+                            Messaging.unicast(host, MessageFactory.getMessage(Message.MessageType.SEND_FILE, fileName + "," +
+                                    portRange[0] + new Random().nextInt(portRange[1] - portRange[0] + 1)));
                             ServerSocket serverSocket = new ServerSocket(8999);
                             Socket socket = serverSocket.accept();
                             DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
