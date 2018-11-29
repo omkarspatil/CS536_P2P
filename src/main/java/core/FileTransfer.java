@@ -53,7 +53,6 @@ public class FileTransfer implements Runnable {
                     OutputStream out = socket.getOutputStream();
                     int count;
                     while ((count = in.read(bytes)) > 0) {
-                        System.out.println(bytes);
                         out.write(bytes, 0, count);
                     }
                     out.close();
@@ -68,9 +67,17 @@ public class FileTransfer implements Runnable {
             case RECIEVER: {
                 try {
                     for (InetAddress host : hosts) {
+
+                        if (host.equals(state.getLocalIP())) {
+                            if (new File("./files/" + fileName).exists()) {
+                                break;
+                            } else continue;
+                        }
+
                         Messaging.unicast(host, MessageFactory.getMessage(Message.MessageType.FILE_REQUEST, fileName));
                         long startTime = System.currentTimeMillis();
-                        while (!Thread.interrupted() && System.currentTimeMillis() - startTime < FILE_AVAILABILITY_TIMEOUT);
+                        while (!Thread.interrupted() && System.currentTimeMillis() - startTime < FILE_AVAILABILITY_TIMEOUT)
+                            ;
 
                         if (state.getTransfers().get(fileName).getStatus()) {
                             int port = (portRange[0] + new Random().nextInt(portRange[1] - portRange[0] + 1));
@@ -87,7 +94,6 @@ public class FileTransfer implements Runnable {
                             break;
                         }
                     }
-
                     File f = new File("./files/" + fileName);
                     if (!(f.exists() && !f.isDirectory())) {
                         System.out.println("404 : " + fileName + " could not be found. ");
