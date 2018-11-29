@@ -14,7 +14,7 @@ public class FileTransfer implements Runnable {
 
     public enum TransferType {SENDER, RECIEVER}
 
-    private final int FILE_AVAILABILITY_TIMEOUT = 10000;
+    private final int FILE_AVAILABILITY_TIMEOUT = 100000;
     Set<InetAddress> hosts;
     InetAddress sendTo;
     String fileName;
@@ -28,10 +28,11 @@ public class FileTransfer implements Runnable {
         this.state = state;
     }
 
-    public FileTransfer(InetAddress sendTo, String fileName, TransferType type) {
+    public FileTransfer(InetAddress sendTo, String fileName, TransferType type, HostState state) {
         this.sendTo = sendTo;
         this.fileName = fileName;
         this.type = type;
+        this.state = state;
     }
 
     @Override
@@ -39,7 +40,7 @@ public class FileTransfer implements Runnable {
         switch (type) {
             case SENDER: {
                 try {
-                    Socket socket = new Socket(sendTo, 4444);
+                    Socket socket = new Socket(sendTo, 8999);
                     File file = new File("./files/" + fileName);
 
                     // Get the size of the file
@@ -48,6 +49,7 @@ public class FileTransfer implements Runnable {
                     OutputStream out = socket.getOutputStream();
                     int count;
                     while ((count = in.read(bytes)) > 0) {
+                        System.out.println(bytes);
                         out.write(bytes, 0, count);
                     }
                     out.close();
@@ -64,10 +66,11 @@ public class FileTransfer implements Runnable {
                     for (InetAddress host : hosts) {
                         Messaging.unicast(host, MessageFactory.getMessage(Message.MessageType.FILE_REQUEST, fileName));
                         long startTime = System.currentTimeMillis();
-                        while (!Thread.interrupted() && System.currentTimeMillis() - startTime < FILE_AVAILABILITY_TIMEOUT)
-                            ;
+                        while (!Thread.interrupted() && System.currentTimeMillis() - startTime < FILE_AVAILABILITY_TIMEOUT);
+
                         if (state.getTransfers().get(fileName).getStatus()) {
-                            ServerSocket serverSocket = new ServerSocket(4444);
+                            Messaging.unicast(host, MessageFactory.getMessage(Message.MessageType.SEND_FILE, fileName));
+                            ServerSocket serverSocket = new ServerSocket(8999);
                             Socket socket = serverSocket.accept();
                             DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
                             byte[] bytes = new byte[1024];
