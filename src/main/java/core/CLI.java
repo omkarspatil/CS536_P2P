@@ -11,9 +11,9 @@ import java.util.*;
 public class CLI implements Runnable{
 
     HostState hostState;
-    CLI(HostState hs) {
-        hostState = hs;
-    }
+    Thread leaderDiscoverThread;
+    private final int LEADER_TIMEOUT = 10000;
+    CLI(HostState hs) { hostState = hs; }
 
     @Override
     public void run() {
@@ -43,7 +43,18 @@ public class CLI implements Runnable{
                                 if(hostState.getLeader().equals(hostState.getLocalIP())) System.out.println(hostState.getIndex().getFiles());
                                 else{
                                     Messaging.unicast(hostState.getLeader(), MessageFactory.getMessage(Message.MessageType.FILE_LIST_QUERY));
-                                    while(!Thread.interrupted()) Thread.yield();
+                                    long startTime = System.currentTimeMillis();
+                                    long endTime = System.currentTimeMillis();
+                                    while(!Thread.interrupted() && (endTime - startTime > LEADER_TIMEOUT)) {
+                                        Thread.yield();
+                                        endTime = System.currentTimeMillis();
+                                    }
+                                    if((endTime - startTime > LEADER_TIMEOUT)) {
+                                        //leader is inactive, start election
+                                        System.out.println("Leader node is inactive, please try again in a few seconds");
+                                        leaderDiscoverThread = new Thread(new LeaderDiscovery(hostState));
+                                        leaderDiscoverThread.start();
+                                    }
                                 }
                             }
                             catch (IOException e){
@@ -57,7 +68,18 @@ public class CLI implements Runnable{
                             Set<String> files = new HashSet<>(commands.subList(1,commands.size()));
                             if(!hostState.getLeader().equals(hostState.getLocalIP())){
                                 Messaging.unicast(hostState.getLeader(), MessageFactory.getMessage(Message.MessageType.FILE_QUERY, files ));
-                                while(!Thread.interrupted()) Thread.yield();
+                                long startTime = System.currentTimeMillis();
+                                long endTime = System.currentTimeMillis();
+                                while(!Thread.interrupted() && (endTime - startTime > LEADER_TIMEOUT)) {
+                                    Thread.yield();
+                                    endTime = System.currentTimeMillis();
+                                }
+                                if((endTime - startTime > LEADER_TIMEOUT)) {
+                                    //leader is inactive, start election
+                                    System.out.println("Leader node is inactive, please try again in a few seconds");
+                                    leaderDiscoverThread = new Thread(new LeaderDiscovery(hostState));
+                                    leaderDiscoverThread.start();
+                                }
                             }
 
                             //Check where a file is available
