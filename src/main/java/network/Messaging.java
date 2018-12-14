@@ -20,7 +20,7 @@ public class Messaging {
             Enumeration interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = (NetworkInterface) interfaces.nextElement();
-                if (networkInterface.isLoopback() || !networkInterface.isUp()) {
+                if (networkInterface.isLoopback() || !networkInterface.isUp() || networkInterface.isVirtual()) {
                     continue; // Don't want to broadcast to the loopback interface
                 }
 

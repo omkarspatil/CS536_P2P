@@ -91,7 +91,9 @@ public class MessageListener implements Runnable {
                         hostState.setOngoingElection(false);
                         hostState.setElectionHost(false);
                         leaderDiscoverThread.interrupt();
-                        Messaging.unicast(hostState.getLeader(),MessageFactory.getMessage(Message.MessageType.FILE_LIST,files));
+                        if(hostState.getLocalIP() != hostState.getLeader()) {
+                            Messaging.unicast(hostState.getLeader(), MessageFactory.getMessage(Message.MessageType.FILE_LIST, files));
+                        }
                         break;
                     }
                     case LEADER_DISCOVERY: {

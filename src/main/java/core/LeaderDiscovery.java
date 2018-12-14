@@ -4,10 +4,13 @@ import entity.Message;
 import network.Messaging;
 import state.HostState;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
+import java.util.Set;
+import java.util.TreeSet;
 
 import static entity.Message.MessageType.*;
 
@@ -46,6 +49,13 @@ public class LeaderDiscovery implements Runnable {
         }
 
         try {
+            Set<String> files = new TreeSet<>();
+            for (final File fileEntry : new File("./files").listFiles()) {
+                if (!fileEntry.isDirectory()) {
+                    files.add(fileEntry.getName());
+                }
+            }
+
             //Find out the leader
             hostState.setLeader(null);
 
@@ -75,6 +85,10 @@ public class LeaderDiscovery implements Runnable {
                     Messaging.broadcast(MessageFactory.getMessage(DECLARE_LEADER, hostState.getLeader()));
                     hostState.setOngoingElection(false);
                     hostState.setElectionHost(false);
+
+                    if(hostState.getLeader() != hostState.getLocalIP()) {
+                        Messaging.unicast(hostState.getLeader(),MessageFactory.getMessage(Message.MessageType.FILE_LIST, files));
+                    }
                 }
             }
         } catch (Exception ex) {
