@@ -45,11 +45,11 @@ public class CLI implements Runnable{
                                     Messaging.unicast(hostState.getLeader(), MessageFactory.getMessage(Message.MessageType.FILE_LIST_QUERY));
                                     long startTime = System.currentTimeMillis();
                                     long endTime = System.currentTimeMillis();
-                                    while(!Thread.interrupted() && (endTime - startTime > LEADER_TIMEOUT)) {
+                                    while(!Thread.interrupted() && (endTime - startTime < LEADER_TIMEOUT)) {
                                         Thread.yield();
                                         endTime = System.currentTimeMillis();
                                     }
-                                    if((endTime - startTime > LEADER_TIMEOUT)) {
+                                    if((endTime - startTime >= LEADER_TIMEOUT)) {
                                         //leader is inactive, start election
                                         System.out.println("Leader node is inactive, please try again in a few seconds");
                                         leaderDiscoverThread = new Thread(new LeaderDiscovery(hostState));
@@ -70,11 +70,11 @@ public class CLI implements Runnable{
                                 Messaging.unicast(hostState.getLeader(), MessageFactory.getMessage(Message.MessageType.FILE_QUERY, files ));
                                 long startTime = System.currentTimeMillis();
                                 long endTime = System.currentTimeMillis();
-                                while(!Thread.interrupted() && (endTime - startTime > LEADER_TIMEOUT)) {
+                                while(!Thread.interrupted() && (endTime - startTime < LEADER_TIMEOUT)) {
                                     Thread.yield();
                                     endTime = System.currentTimeMillis();
                                 }
-                                if((endTime - startTime > LEADER_TIMEOUT)) {
+                                if((endTime - startTime >= LEADER_TIMEOUT)) {
                                     //leader is inactive, start election
                                     System.out.println("Leader node is inactive, please try again in a few seconds");
                                     leaderDiscoverThread = new Thread(new LeaderDiscovery(hostState));
