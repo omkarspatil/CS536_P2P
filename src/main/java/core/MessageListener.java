@@ -62,6 +62,11 @@ public class MessageListener implements Runnable {
             System.out.println("final: " + localIP);
 
             hostState.setLocalIP(localIP);
+            for (final File fileEntry : new File("./files").listFiles()) {
+                if (!fileEntry.isDirectory()) {
+                    hostState.getIndex().add(fileEntry.getName(), localIP);
+                }
+            }
 
             while (true) {
 
@@ -71,13 +76,12 @@ public class MessageListener implements Runnable {
                 DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                 socket.receive(packet);
 
-
-
                 String message = new String(packet.getData(), 0, packet.getLength()).trim();
                 //Packet received and parsed
                 Gson gson = new Gson();
                 Message parsedMessage = gson.fromJson(message, Message.class);
                 InetAddress receievedIP = parsedMessage.getLocalIp();
+
 //                System.out.println("Got message from " + packet.getAddress() + " to " + localIP);
                 if(packet.getAddress().equals(localIP) || localIPSet.contains(packet.getAddress()) || localIPSet.contains(receievedIP)) {
 //                    System.out.println("Self");
@@ -87,7 +91,6 @@ public class MessageListener implements Runnable {
                 Message.MessageType type = parsedMessage.getType();
                 System.out.println("from " + receievedIP.getHostAddress() +
                         ", to " + localIP + " Got: " + parsedMessage.getType() + " message: " + parsedMessage.getMessage());
-
 
                 switch(type){
                     case DECLARE_LEADER: {
