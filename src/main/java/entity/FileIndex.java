@@ -11,7 +11,7 @@ public class FileIndex {
     }
 
     public void add(String file, InetAddress host){
-        index.putIfAbsent(file, new HashSet<>());
+        index.putIfAbsent(file, new TreeSet<>(Collections.reverseOrder()));
         index.get(file).add(host);
     }
 
@@ -19,14 +19,16 @@ public class FileIndex {
         return index.containsKey(file) ? index.get(file) : null;
     }
 
-                    public void remove(String file, InetAddress host){
+    public void remove(String file, InetAddress host){
         if(index.containsKey(file)){
             index.get(file).remove(host);
         }
     }
 
     public Set<String> getFiles(){
-        return new TreeSet<>(index.keySet());
+        Set<String> toReturn  = new TreeSet<>(Collections.reverseOrder());
+        toReturn.addAll(index.keySet());
+        return toReturn;
     }
 
     public Map<String, Set<InetAddress>> getHostsMap(Set<String> files){
