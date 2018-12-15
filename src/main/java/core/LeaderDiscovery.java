@@ -26,7 +26,7 @@ public class LeaderDiscovery implements Runnable {
 
     public String discoverLeader(){
         InetAddress localIP = null;
-        try {
+        /*try {
 
             for (Enumeration<NetworkInterface> ifaces =
                  NetworkInterface.getNetworkInterfaces();
@@ -46,7 +46,8 @@ public class LeaderDiscovery implements Runnable {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
+        localIP = hostState.getLocalIP();
 
         try {
             Set<String> files = new TreeSet<>();
@@ -59,7 +60,7 @@ public class LeaderDiscovery implements Runnable {
             //Find out the leader
             hostState.setLeader(null);
 
-            Messaging.broadcast(MessageFactory.getMessage(Message.MessageType.LEADER_DISCOVERY));
+            Messaging.broadcast(MessageFactory.getMessage(localIP, Message.MessageType.LEADER_DISCOVERY));
             long startTime = System.currentTimeMillis();
 
             while(!Thread.interrupted() && System.currentTimeMillis() - startTime < LEADER_DISCOVERY_TIMEOUT){
@@ -69,7 +70,7 @@ public class LeaderDiscovery implements Runnable {
             if(hostState.getLeader() == null){
 
                 if(!hostState.isOngoingElection()){
-                    Messaging.broadcast(MessageFactory.getMessage(CONTEST_ELECTION));
+                    Messaging.broadcast(MessageFactory.getMessage(localIP, CONTEST_ELECTION));
 
                     long startElectionTime = System.currentTimeMillis();
                     System.out.println("There is an ongoing election");
@@ -82,12 +83,12 @@ public class LeaderDiscovery implements Runnable {
                     }
                     //Declare the result
                     System.out.println("Setting Leader: " + hostState.getLeader());
-                    Messaging.broadcast(MessageFactory.getMessage(DECLARE_LEADER, hostState.getLeader()));
+                    Messaging.broadcast(MessageFactory.getMessage(localIP, DECLARE_LEADER, hostState.getLeader()));
                     hostState.setOngoingElection(false);
                     hostState.setElectionHost(false);
 
                     if(hostState.getLeader() != hostState.getLocalIP()) {
-                        Messaging.unicast(hostState.getLeader(),MessageFactory.getMessage(Message.MessageType.FILE_LIST, files));
+                        Messaging.unicast(hostState.getLeader(),MessageFactory.getMessage(localIP, Message.MessageType.FILE_LIST, files));
                     }
                 }
             }

@@ -6,6 +6,7 @@ import state.HostState;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.*;
 
 public class CLI implements Runnable{
@@ -18,6 +19,7 @@ public class CLI implements Runnable{
     @Override
     public void run() {
         Scanner sc = new Scanner(System.in);
+        InetAddress localIP = hostState.getLocalIP();
 
         while(true){
             System.out.println(" list -l(optional for local): to list all files");
@@ -42,7 +44,7 @@ public class CLI implements Runnable{
                             try {
                                 if(hostState.getLeader().equals(hostState.getLocalIP())) System.out.println(hostState.getIndex().getFiles());
                                 else{
-                                    Messaging.unicast(hostState.getLeader(), MessageFactory.getMessage(Message.MessageType.FILE_LIST_QUERY));
+                                    Messaging.unicast(hostState.getLeader(), MessageFactory.getMessage(localIP, Message.MessageType.FILE_LIST_QUERY));
                                     long startTime = System.currentTimeMillis();
                                     long endTime = System.currentTimeMillis();
                                     while(!Thread.interrupted() && (endTime - startTime < LEADER_TIMEOUT)) {
@@ -67,7 +69,7 @@ public class CLI implements Runnable{
                         try {
                             Set<String> files = new HashSet<>(commands.subList(1,commands.size()));
                             if(!hostState.getLeader().equals(hostState.getLocalIP())){
-                                Messaging.unicast(hostState.getLeader(), MessageFactory.getMessage(Message.MessageType.FILE_QUERY, files ));
+                                Messaging.unicast(hostState.getLeader(), MessageFactory.getMessage(localIP, Message.MessageType.FILE_QUERY, files ));
                                 long startTime = System.currentTimeMillis();
                                 long endTime = System.currentTimeMillis();
                                 while(!Thread.interrupted() && (endTime - startTime < LEADER_TIMEOUT)) {

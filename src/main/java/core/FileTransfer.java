@@ -66,6 +66,7 @@ public class FileTransfer implements Runnable {
             }
             case RECIEVER: {
                 try {
+                    InetAddress localIP = state.getLocalIP();
                     for (InetAddress host : hosts) {
 
                         if (host.equals(state.getLocalIP())) {
@@ -74,14 +75,14 @@ public class FileTransfer implements Runnable {
                             } else continue;
                         }
 
-                        Messaging.unicast(host, MessageFactory.getMessage(Message.MessageType.FILE_REQUEST, fileName));
+                        Messaging.unicast(host, MessageFactory.getMessage(localIP, Message.MessageType.FILE_REQUEST, fileName));
                         long startTime = System.currentTimeMillis();
                         while (!Thread.interrupted() && System.currentTimeMillis() - startTime < FILE_AVAILABILITY_TIMEOUT)
                             ;
 
                         if (state.getTransfers().get(fileName).getStatus()) {
                             int port = (portRange[0] + new Random().nextInt(portRange[1] - portRange[0] + 1));
-                            Messaging.unicast(host, MessageFactory.getMessage(Message.MessageType.SEND_FILE, fileName + "," + port));
+                            Messaging.unicast(host, MessageFactory.getMessage(localIP, Message.MessageType.SEND_FILE, fileName + "," + port));
                             ServerSocket serverSocket = new ServerSocket(port);
                             Socket socket = serverSocket.accept();
                             DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
@@ -99,7 +100,7 @@ public class FileTransfer implements Runnable {
                         System.out.println("404 : " + fileName + " could not be found. ");
                     } else {
                         state.getIndex().add(fileName, state.getLocalIP());
-                        Messaging.unicast(state.getLeader(), MessageFactory.getMessage(Message.MessageType.FILE_LIST, state.getIndex().getFiles()));
+                        Messaging.unicast(state.getLeader(), MessageFactory.getMessage(localIP, Message.MessageType.FILE_LIST, state.getIndex().getFiles()));
                         System.out.println("Transfer completed : " + fileName + "(" + f.length() / 1024 + " kB)");
                     }
                 } catch (Exception e) {

@@ -71,19 +71,21 @@ public class MessageListener implements Runnable {
                 DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                 socket.receive(packet);
 
-//                System.out.println("Got message from " + packet.getAddress() + " to " + localIP);
-                if(packet.getAddress().equals(localIP) || localIPSet.contains(packet.getAddress())) {
-//                    System.out.println("Self");
-                    continue;
-                }
+
 
                 String message = new String(packet.getData(), 0, packet.getLength()).trim();
                 //Packet received and parsed
                 Gson gson = new Gson();
                 Message parsedMessage = gson.fromJson(message, Message.class);
+                InetAddress receievedIP = parsedMessage.getLocalIp();
+//                System.out.println("Got message from " + packet.getAddress() + " to " + localIP);
+                if(packet.getAddress().equals(localIP) || localIPSet.contains(packet.getAddress()) || localIPSet.contains(receievedIP)) {
+//                    System.out.println("Self");
+                    continue;
+                }
 
                 Message.MessageType type = parsedMessage.getType();
-                System.out.println("from " + packet.getAddress().getHostAddress() + ", to " + localIP + " Got: " + parsedMessage.getType() + " message: " + parsedMessage.getMessage());
+                System.out.println("from " + receievedIP.getHostAddress() + ", to " + localIP + " Got: " + parsedMessage.getType() + " message: " + parsedMessage.getMessage());
 
 
                 switch(type){
@@ -100,17 +102,17 @@ public class MessageListener implements Runnable {
                                     hostState.getIndex().add(fileEntry.getName(), localIP);
                                 }
                             }
-                            Messaging.unicast(hostState.getLeader(), MessageFactory.getMessage(Message.MessageType.FILE_LIST, files));
+                            Messaging.unicast(hostState.getLeader(), MessageFactory.getMessage(localIP, Message.MessageType.FILE_LIST, files));
                         }
                         break;
                     }
                     case LEADER_DISCOVERY: {
                         if (hostState.isOngoingElection()) {
                             if (hostState.isElectionHost()) {
-                                Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.CONTEST_ELECTION));
+                                Messaging.unicast(receievedIP, MessageFactory.getMessage(localIP, Message.MessageType.CONTEST_ELECTION));
                             }
                         } else if(hostState.getLeader()!=null && hostState.getLeader().equals(InetAddress.getLocalHost())) {
-                            Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.DECLARE_LEADER, hostState.getLeader()));
+                            Messaging.unicast(receievedIP, MessageFactory.getMessage(localIP, Message.MessageType.DECLARE_LEADER, hostState.getLeader()));
                         }
                         break;
                     }
@@ -121,8 +123,8 @@ public class MessageListener implements Runnable {
                             currentLeader = localIP;
                             hostState.setLeader(localIP);
                         }
-                        if(packet.getAddress().toString().compareTo(currentLeader.toString())>0){
-                            hostState.setLeader(packet.getAddress());
+                        if(receievedIP.toString().compareTo(currentLeader.toString())>0){
+                            hostState.setLeader(receievedIP);
                         }
                         break;
                     }
@@ -131,22 +133,22 @@ public class MessageListener implements Runnable {
                         if (!hostState.isOngoingElection()) {
                             hostState.setOngoingElection(true);
                             hostState.setElectionHost(false);
-                            Messaging.unicast(packet.getAddress(),MessageFactory.getMessage(Message.MessageType.ELECTION_PARTICIPANT));
+                            Messaging.unicast(receievedIP, MessageFactory.getMessage(localIP, Message.MessageType.ELECTION_PARTICIPANT));
                         } else if (hostState.isElectionHost()) {
-                            Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.CONTEST_ELECTION));
+                            Messaging.unicast(receievedIP, MessageFactory.getMessage(localIP, Message.MessageType.CONTEST_ELECTION));
                         }
                         break;
                     }
                     case FILE_LIST:{
                         List filesIn = gson.fromJson(parsedMessage.getMessage(), ArrayList.class);
                         for(Object file : filesIn){
-                            hostState.getIndex().add((String)file, packet.getAddress());
+                            hostState.getIndex().add((String)file, receievedIP);
                         }
                         System.out.println(hostState.getIndex());
                         break;
                     }
                     case FILE_LIST_QUERY:{
-                        Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.FILE_LIST_RESPONSE, hostState.getIndex().getFiles()));
+                        Messaging.unicast(receievedIP, MessageFactory.getMessage(localIP, Message.MessageType.FILE_LIST_RESPONSE, hostState.getIndex().getFiles()));
                         break;
                     }
                     case FILE_LIST_RESPONSE:{
@@ -157,7 +159,7 @@ public class MessageListener implements Runnable {
                     case FILE_QUERY:{
                         Set filesList = gson.fromJson(parsedMessage.getMessage(), Set.class);
                         Map<String,Set<InetAddress>> hostsMap = hostState.getIndex().getHostsMap(filesList);
-                        Messaging.unicast(packet.getAddress(), MessageFactory.getMessageForQueryResponse(Message.MessageType.FILE_QUERY_RESPONSE, hostsMap));
+                        Messaging.unicast(receievedIP, MessageFactory.getMessageForQueryResponse(localIP, Message.MessageType.FILE_QUERY_RESPONSE, hostsMap));
                         break;
                     }
                     case FILE_QUERY_RESPONSE:{
@@ -184,10 +186,10 @@ public class MessageListener implements Runnable {
                     case FILE_REQUEST:{
                         File f = new File("./files/"+parsedMessage.getMessage());
                         if(f.exists() && !f.isDirectory()) {
-                            Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.FILE_RESPONSE, parsedMessage.getMessage()));
+                            Messaging.unicast(receievedIP, MessageFactory.getMessage(localIP, Message.MessageType.FILE_RESPONSE, parsedMessage.getMessage()));
                         }
                         else{
-                            Messaging.unicast(packet.getAddress(), MessageFactory.getMessage(Message.MessageType.FILE_RESPONSE_404, parsedMessage.getMessage()));
+                            Messaging.unicast(receievedIP, MessageFactory.getMessage(localIP, Message.MessageType.FILE_RESPONSE_404, parsedMessage.getMessage()));
                         }
                         break;
                     }
@@ -204,7 +206,7 @@ public class MessageListener implements Runnable {
                         String[] parts = parsedMessage.getMessage().split(",");
                         int port = Integer.parseInt(parts[1]);
                         hostState.getTransfers().put(parts[0], new TransferState(new Thread(new FileTransfer(
-                                packet.getAddress(), parts[0], FileTransfer.TransferType.SENDER, hostState, port)),false));
+                                receievedIP, parts[0], FileTransfer.TransferType.SENDER, hostState, port)),false));
                         hostState.getTransfers().get(parts[0]).getThread().start();
                         break;
                     }

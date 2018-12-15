@@ -1,5 +1,7 @@
 package entity;
 
+import java.net.InetAddress;
+
 public class Message {
 
 
@@ -22,6 +24,7 @@ public class Message {
 
     private MessageType type;
     private String message;
+    private InetAddress localIp;
 
     public MessageType getType() {
         return type;
@@ -31,9 +34,12 @@ public class Message {
         return message;
     }
 
-    public Message(MessageType type, String message) {
+    public InetAddress getLocalIp() { return localIp;}
+
+    public Message( InetAddress localIp, MessageType type, String message) {
         this.type = type;
         this.message = message;
+        this.localIp = localIp;
     }
 
     Message(){
