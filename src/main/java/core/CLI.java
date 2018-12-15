@@ -7,7 +7,9 @@ import state.HostState;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class CLI implements Runnable{
 
@@ -20,7 +22,29 @@ public class CLI implements Runnable{
     public void run() {
         Scanner sc = new Scanner(System.in);
         InetAddress localIP = hostState.getLocalIP();
+        String ipv4_pattern = "/25\\.(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){2}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
+        Pattern IPV4_PATTERN = Pattern.compile(ipv4_pattern, Pattern.CASE_INSENSITIVE);
+        try {
 
+            for (Enumeration<NetworkInterface> ifaces =
+                 NetworkInterface.getNetworkInterfaces();
+                 ifaces.hasMoreElements(); )
+            {
+                NetworkInterface iface = ifaces.nextElement();
+//                System.out.println(iface.getName() + ":");
+                for (Enumeration<InetAddress> addresses =
+                     iface.getInetAddresses();
+                     addresses.hasMoreElements(); )
+                {
+                    InetAddress address = addresses.nextElement();
+                    if (!address.isLoopbackAddress() && IPV4_PATTERN.matcher(address.toString()).matches()) {
+                        localIP = address;
+                    }
+                }
+            }
+        }catch (Exception e) {
+
+        }
         while(true){
             System.out.println(" list -l(optional for local): to list all files");
             System.out.println(" get <space sep file list>: to download");
