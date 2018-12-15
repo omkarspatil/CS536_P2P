@@ -1,6 +1,7 @@
 package core;
 
 import entity.Message;
+import entity.TransferState;
 import network.Messaging;
 import state.HostState;
 
@@ -106,8 +107,14 @@ public class CLI implements Runnable{
                                     leaderDiscoverThread = new Thread(new LeaderDiscovery(hostState));
                                     leaderDiscoverThread.start();
                                 }
+                            } else {
+                                Map<String,Set<InetAddress>> hostsMap = hostState.getIndex().getHostsMap(files);
+                                for(String file : hostsMap.keySet()){
+                                    for(InetAddress i : hostsMap.get(file))
+                                        hostState.getIndex().add(file, i);
+                                    hostState.getTransfers().put(file, new TransferState(new Thread(new FileTransfer(hostState.getIndex().get(file), file, FileTransfer.TransferType.RECIEVER, hostState)), false));
+                                }
                             }
-
                             //Check where a file is available
                             Set<String> missingFiles = new TreeSet<>();
                             Set<String> locatedFiles  = hostState.getIndex().getFiles();
