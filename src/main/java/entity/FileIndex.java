@@ -11,7 +11,7 @@ public class FileIndex {
     }
 
     public void add(String file, InetAddress host){
-        index.putIfAbsent(file, new TreeSet<>(Collections.reverseOrder()));
+        index.putIfAbsent(file, new TreeSet<>((a,b)->(b.toString().compareTo(a.toString()))));
         index.get(file).add(host);
     }
 
