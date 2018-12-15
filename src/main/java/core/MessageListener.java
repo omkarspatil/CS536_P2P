@@ -34,6 +34,7 @@ public class MessageListener implements Runnable {
             socket = new DatagramSocket(4445, InetAddress.getByName("0.0.0.0"));
             socket.setBroadcast(true);
 
+            Set<InetAddress> localIPSet = new HashSet<>();
             InetAddress localIP = null;
             for (Enumeration<NetworkInterface> ifaces =
                  NetworkInterface.getNetworkInterfaces();
@@ -46,11 +47,15 @@ public class MessageListener implements Runnable {
                      addresses.hasMoreElements(); )
                 {
                     InetAddress address = addresses.nextElement();
-                    if (!address.isLoopbackAddress() && address.isSiteLocalAddress()) {
+                    if (!address.isLoopbackAddress()) {
                         localIP = address;
+                        localIPSet.add(address);
+                        System.out.println(address);
                     }
                 }
             }
+
+            System.out.println("final: " + localIP);
 
             hostState.setLocalIP(localIP);
 
@@ -63,7 +68,7 @@ public class MessageListener implements Runnable {
                 socket.receive(packet);
 
 //                System.out.println("Got message from " + packet.getAddress() + " to " + localIP);
-                if(packet.getAddress().equals(localIP)) {
+                if(packet.getAddress().equals(localIP) || localIPSet.contains(packet.getAddress())) {
 //                    System.out.println("Self");
                     continue;
                 }
