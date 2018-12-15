@@ -85,7 +85,8 @@ public class MessageListener implements Runnable {
                 }
 
                 Message.MessageType type = parsedMessage.getType();
-                System.out.println("from " + receievedIP.getHostAddress() + ", to " + localIP + " Got: " + parsedMessage.getType() + " message: " + parsedMessage.getMessage());
+                System.out.println("from " + receievedIP.getHostAddress() +
+                        ", to " + localIP + " Got: " + parsedMessage.getType() + " message: " + parsedMessage.getMessage());
 
 
                 switch(type){

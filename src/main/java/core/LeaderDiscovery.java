@@ -11,6 +11,7 @@ import java.net.NetworkInterface;
 import java.util.Enumeration;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import static entity.Message.MessageType.*;
 
@@ -26,7 +27,9 @@ public class LeaderDiscovery implements Runnable {
 
     public String discoverLeader(){
         InetAddress localIP = null;
-        /*try {
+        try {
+            String ipv4_pattern = "/(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
+            Pattern IPV4_PATTERN = Pattern.compile(ipv4_pattern, Pattern.CASE_INSENSITIVE);
 
             for (Enumeration<NetworkInterface> ifaces =
                  NetworkInterface.getNetworkInterfaces();
@@ -39,15 +42,15 @@ public class LeaderDiscovery implements Runnable {
                      addresses.hasMoreElements(); )
                 {
                     InetAddress address = addresses.nextElement();
-                    if (!address.isLoopbackAddress() && address.isSiteLocalAddress()) {
+                    if (!address.isLoopbackAddress() && IPV4_PATTERN.matcher(address.toString()).matches()) {
                         localIP = address;
                     }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }*/
-        localIP = hostState.getLocalIP();
+        }
+        //localIP = hostState.getLocalIP();
 
         try {
             Set<String> files = new TreeSet<>();
