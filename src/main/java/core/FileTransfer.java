@@ -98,6 +98,8 @@ public class FileTransfer implements Runnable {
                     if (!(f.exists() && !f.isDirectory())) {
                         System.out.println("404 : " + fileName + " could not be found. ");
                     } else {
+                        state.getIndex().add(fileName, state.getLocalIP());
+                        Messaging.unicast(state.getLeader(), MessageFactory.getMessage(Message.MessageType.FILE_LIST, state.getIndex().getFiles()));
                         System.out.println("Transfer completed : " + fileName + "(" + f.length() / 1024 + " kB)");
                     }
                 } catch (Exception e) {

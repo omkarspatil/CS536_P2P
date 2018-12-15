@@ -54,14 +54,6 @@ public class MessageListener implements Runnable {
 
             hostState.setLocalIP(localIP);
 
-            Set<String> files = new TreeSet<>();
-            for (final File fileEntry : new File("./files").listFiles()) {
-                if (!fileEntry.isDirectory()) {
-                    files.add(fileEntry.getName());
-                    hostState.getIndex().add(fileEntry.getName(), localIP);
-                }
-            }
-
             while (true) {
 
 //                System.out.println(getClass().getName() + ">>>Ready to receive messages!");
@@ -92,6 +84,13 @@ public class MessageListener implements Runnable {
                         hostState.setElectionHost(false);
                         leaderDiscoverThread.interrupt();
                         if(hostState.getLocalIP() != hostState.getLeader()) {
+                            Set<String> files = new TreeSet<>();
+                            for (final File fileEntry : new File("./files").listFiles()) {
+                                if (!fileEntry.isDirectory()) {
+                                    files.add(fileEntry.getName());
+                                    hostState.getIndex().add(fileEntry.getName(), localIP);
+                                }
+                            }
                             Messaging.unicast(hostState.getLeader(), MessageFactory.getMessage(Message.MessageType.FILE_LIST, files));
                         }
                         break;
