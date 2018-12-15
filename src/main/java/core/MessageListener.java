@@ -14,6 +14,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class MessageListener implements Runnable {
     DatagramSocket socket;
@@ -36,6 +37,9 @@ public class MessageListener implements Runnable {
 
             Set<InetAddress> localIPSet = new HashSet<>();
             InetAddress localIP = null;
+            String ipv4_pattern = "/(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
+            Pattern IPV4_PATTERN = Pattern.compile(ipv4_pattern, Pattern.CASE_INSENSITIVE);
+
             for (Enumeration<NetworkInterface> ifaces =
                  NetworkInterface.getNetworkInterfaces();
                  ifaces.hasMoreElements(); )
@@ -47,7 +51,7 @@ public class MessageListener implements Runnable {
                      addresses.hasMoreElements(); )
                 {
                     InetAddress address = addresses.nextElement();
-                    if (!address.isLoopbackAddress()) {
+                    if (!address.isLoopbackAddress() && IPV4_PATTERN.matcher(address.toString()).matches()) {
                         localIP = address;
                         localIPSet.add(address);
                         System.out.println(address);
