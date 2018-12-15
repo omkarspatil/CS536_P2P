@@ -37,7 +37,9 @@ public class MessageListener implements Runnable {
 
             Set<InetAddress> localIPSet = new HashSet<>();
             InetAddress localIP = null;
-            String ipv4_pattern = "/25\\.(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){2}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
+            String ipv4_pattern = "/(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
+//            Use this pattern for VPN with appropriate prefix for IP, needed coz it was not possible to communicate over VPN to a local IP address 192.****
+//            String ipv4_pattern = "/25\\.(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){2}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
             Pattern IPV4_PATTERN = Pattern.compile(ipv4_pattern, Pattern.CASE_INSENSITIVE);
 
             for (Enumeration<NetworkInterface> ifaces =
