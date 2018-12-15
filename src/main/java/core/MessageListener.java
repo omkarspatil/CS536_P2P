@@ -112,7 +112,7 @@ public class MessageListener implements Runnable {
                             if (hostState.isElectionHost()) {
                                 Messaging.unicast(receievedIP, MessageFactory.getMessage(localIP, Message.MessageType.CONTEST_ELECTION));
                             }
-                        } else if(hostState.getLeader()!=null && hostState.getLeader().equals(InetAddress.getLocalHost())) {
+                        } else if(hostState.getLeader()!=null && hostState.getLeader().equals(localIP)) {
                             Messaging.unicast(receievedIP, MessageFactory.getMessage(localIP, Message.MessageType.DECLARE_LEADER, hostState.getLeader()));
                         }
                         break;
