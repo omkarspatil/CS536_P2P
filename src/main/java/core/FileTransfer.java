@@ -8,8 +8,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class FileTransfer implements Runnable {
 
@@ -67,6 +66,10 @@ public class FileTransfer implements Runnable {
             case RECIEVER: {
                 try {
                     InetAddress localIP = state.getLocalIP();
+
+                    List<InetAddress> hostsL = new ArrayList<>(hosts);
+                    Collections.sort(hostsL, (a,b)->(b.toString().compareTo(a.toString())));
+
                     for (InetAddress host : hosts) {
 
                         if (host.equals(state.getLocalIP())) {
